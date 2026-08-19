@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="icon" type="image/png" sizes="32x32" href="assets/images/favicon-32x32.png">
+    <title>Product list with cart</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="app.js" defer></script>
+  </head>
+  <body>
+    <main class="container">
+      <section class="products-section">
+        <div class="cart-header">
+          <div>
+            <h1>Desserts</h1>
+            <p class="cart-summary">Choose from our sweet treats and add them to your cart.</p>
+          </div>
+          <div class="cart-summary">9 items available</div>
+        </div>
+
+        <div class="product-grid" id="product-grid"></div>
+      </section>
+
+      <aside class="cart-section">
+        <div class="cart-header">
+          <h2>Your Cart</h2>
+          <p class="cart-summary">Items in cart: <strong id="cart-count">0</strong></p>
+        </div>
+
+        <div id="cart-content" class="cart-list">
+          <div class="cart-empty">
+            Your added items will appear here.
+          </div>
+        </div>
+
+        <div class="cart-footer">
+          <div class="footer-row"><span>Subtotal</span><span id="cart-subtotal">$0.00</span></div>
+          <div class="footer-row"><span>Tax</span><span id="cart-tax">$0.00</span></div>
+          <button id="checkout-btn" class="checkout-btn" disabled>Checkout</button>
+          <button id="reset-btn" class="reset-btn">Reset</button>
+        </div>
+      </aside>
+    </main>
+
+    <div id="modal-backdrop" class="modal-backdrop" aria-hidden="true">
+      <div class="modal" role="dialog" aria-modal="true">
+        <button id="close-modal-btn" aria-label="Close">Close</button>
+        <h2>Order confirmed</h2>
+        <div id="modal-order-summary"></div>
+      </div>
+    </div>
+
+    <footer class="attribution">
+      Coded by <a href="#">Olumoh Abdulsalam</a>.
+    </footer>
+  </body>
+</html>
