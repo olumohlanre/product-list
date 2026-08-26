@@ -1,617 +1,130 @@
-// ========================================
-// PRODUCT DATA
-// ========================================
+const productGrid = document.querySelector("#product-grid");
+const cartContent = document.querySelector("#cart-content");
+const cartCount = document.querySelector("#cart-count");
+const modal = document.querySelector("#confirmation-modal");
+const confirmationItems = document.querySelector("#confirmation-items");
+const storageKey = "sweet-crumbs-cart";
+const cart = loadCart();
+let products = [];
 
-const products = [
-  {
-    id: 1,
-    name: "Waffle with Berries",
-    category: "Waffle",
-    price: 6.50,
-    image: "assets/images/image-waffle-desktop.jpg"
-  },
-  {
-    id: 2,
-    name: "Vanilla Bean Crème Brûlée",
-    category: "Crème Brûlée",
-    price: 7.00,
-    image: "assets/images/image-creme-brulee-desktop.jpg"
-  },
-  {
-    id: 3,
-    name: "Macaron Mix of Five",
-    category: "Macaron",
-    price: 8.00,
-    image: "assets/images/image-macaron-desktop.jpg"
-  },
-  {
-    id: 4,
-    name: "Classic Tiramisu",
-    category: "Tiramisu",
-    price: 5.50,
-    image: "assets/images/image-tiramisu-desktop.jpg"
-  },
-  {
-    id: 5,
-    name: "Pistachio Baklava",
-    category: "Baklava",
-    price: 4.00,
-    image: "assets/images/image-baklava-desktop.jpg"
-  },
-  {
-    id: 6,
-    name: "Lemon Meringue Pie",
-    category: "Pie",
-    price: 5.00,
-    image: "assets/images/image-meringue-desktop.jpg"
-  },
-  {
-    id: 7,
-    name: "Red Velvet Cake",
-    category: "Cake",
-    price: 4.50,
-    image: "assets/images/image-cake-desktop.jpg"
-  },
-  {
-    id: 8,
-    name: "Salted Caramel Brownie",
-    category: "Brownie",
-    price: 4.50,
-    image: "assets/images/image-brownie-desktop.jpg"
-  },
-  {
-    id: 9,
-    name: "Vanilla Panna Cotta",
-    category: "Panna Cotta",
-    price: 6.50,
-    image: "assets/images/image-panna-cotta-desktop.jpg"
-  }
-];
+const money = (value) => `$${value.toFixed(2)}`;
+const getProduct = (name) => products.find((product) => product.name === name);
 
-
-// ========================================
-// CART
-// ========================================
-
-// Load cart from localStorage
-let cart = JSON.parse(localStorage.getItem("cart")) || [];
-
-
-// ========================================
-// SAVE CART TO LOCALSTORAGE
-// ========================================
+function loadCart() {
+	try {
+		const savedCart = JSON.parse(localStorage.getItem(storageKey) || "[]");
+		if (!Array.isArray(savedCart)) return new Map();
+		return new Map(savedCart.filter((entry) => Array.isArray(entry) && typeof entry[0] === "string" && Number.isInteger(entry[1]) && entry[1] > 0));
+	} catch {
+		return new Map();
+	}
+}
 
 function saveCart() {
-  localStorage.setItem("cart", JSON.stringify(cart));
+	try {
+		localStorage.setItem(storageKey, JSON.stringify([...cart]));
+	} catch {
+	}
 }
 
-
-// ========================================
-// HTML ELEMENTS
-// ========================================
-
-const productGrid = document.getElementById("product-grid");
-
-const cartContent = document.getElementById("cart-content");
-const cartCount = document.getElementById("cart-count");
-
-const cartSubtotal = document.getElementById("cart-subtotal");
-const cartTax = document.getElementById("cart-tax");
-
-const checkoutBtn = document.getElementById("checkout-btn");
-
-const modalBackdrop = document.getElementById("modal-backdrop");
-const modalOrderSummary = document.getElementById(
-  "modal-order-summary"
-);
-
-
-// ========================================
-// CREATE START NEW ORDER BUTTON
-// ========================================
-
-const newOrderBtn = document.createElement("button");
-
-newOrderBtn.id = "new-order-btn";
-newOrderBtn.className = "new-order-btn";
-newOrderBtn.type = "button";
-newOrderBtn.textContent = "Start New Order";
-
-modalOrderSummary.insertAdjacentElement(
-  "afterend",
-  newOrderBtn
-);
-
-
-// ========================================
-// ADD PRODUCT TO CART
-// ========================================
-
-productGrid.addEventListener("click", (event) => {
-  const button = event.target.closest(".product-button");
-
-  if (!button) return;
-
-  // Ignore clicks on the + and - buttons here.
-  if (event.target.closest(".btn-qty-action")) {
-    return;
-  }
-
-  const productId = Number(button.dataset.productId);
-
-  addToCart(productId);
-});
-
-
-function addToCart(productId) {
-  const existingItem = cart.find(
-    item => item.id === productId
-  );
-
-  if (existingItem) {
-    existingItem.quantity += 1;
-  } else {
-    const product = products.find(
-      item => item.id === productId
-    );
-
-    if (!product) return;
-
-    cart.push({
-      ...product,
-      quantity: 1
-    });
-  }
-
-  // Save cart after adding item
-  saveCart();
-
-  updateProductButtons();
-  renderCart();
+function getCartAction(product) {
+	const quantity = cart.get(product.name) || 0;
+	return quantity
+		? `<div class="cart-action quantity-control" aria-label="Quantity for ${product.name}">
+				<button type="button" data-action="decrement" data-name="${product.name}" aria-label="Remove one ${product.name}"><img src="./assets/images/icon-decrement-quantity.svg" alt=""></button>
+				<span>${quantity}</span>
+				<button type="button" data-action="increment" data-name="${product.name}" aria-label="Add one ${product.name}"><img src="./assets/images/icon-increment-quantity.svg" alt=""></button>
+			</div>`
+		: `<button class="cart-action" type="button" data-action="add" data-name="${product.name}"><img src="./assets/images/icon-add-to-cart.svg" alt="">Add to Cart</button>`;
 }
 
-
-// ========================================
-// UPDATE PRODUCT BUTTONS
-// ========================================
-
-function updateProductButtons() {
-  const productCards =
-    document.querySelectorAll(".product-card");
-
-  productCards.forEach(card => {
-    const button =
-      card.querySelector(".product-button");
-
-    if (!button) return;
-
-    const productId =
-      Number(button.dataset.productId);
-
-    const cartItem = cart.find(
-      item => item.id === productId
-    );
-
-    if (cartItem) {
-      card.classList.add("selected");
-
-      button.classList.add("btn-quantity");
-
-      button.innerHTML = `
-        <span
-          class="btn-qty-action decrease"
-          data-id="${productId}"
-          role="button"
-          aria-label="Decrease quantity"
-        >
-          −
-        </span>
-
-        <span class="quantity">
-          ${cartItem.quantity}
-        </span>
-
-        <span
-          class="btn-qty-action increase"
-          data-id="${productId}"
-          role="button"
-          aria-label="Increase quantity"
-        >
-          +
-        </span>
-      `;
-
-    } else {
-      card.classList.remove("selected");
-
-      button.classList.remove("btn-quantity");
-
-      button.innerHTML = "Add to Cart";
-    }
-  });
+function renderProducts() {
+	productGrid.innerHTML = products.map((product, index) => {
+		return `<article class="product-card" data-product-name="${product.name}">
+			<div class="product-image-wrap">
+				<picture><source media="(max-width: 400px)" srcset="${product.image.mobile}"><source media="(max-width: 720px)" srcset="${product.image.tablet}"><img class="product-image" src="${product.image.desktop}" alt="${product.name}" loading="${index > 2 ? "lazy" : "eager"}"></picture>
+				<div class="cart-action-slot">${getCartAction(product)}</div>
+			</div>
+			<div class="product-meta"><p class="product-category">${product.category}</p><h3 class="product-name">${product.name}</h3><p class="product-price">${money(product.price)}</p></div>
+		</article>`;
+	}).join("");
+	products.forEach(updateProductCard);
 }
 
+function updateProductCard(product) {
+	const card = [...productGrid.children].find((element) => element.dataset.productName === product.name);
+	if (!card) return;
+	card.classList.toggle("is-selected", cart.has(product.name));
+	card.querySelector(".cart-action-slot").innerHTML = getCartAction(product);
+}
 
-// ========================================
-// PLUS / MINUS BUTTONS
-// ========================================
+function getCartItems() {
+	return [...cart.entries()].map(([name, quantity]) => ({ ...getProduct(name), quantity }));
+}
 
-productGrid.addEventListener("click", (event) => {
-  const quantityButton =
-    event.target.closest(".btn-qty-action");
-
-  if (!quantityButton) return;
-
-  const productId =
-    Number(quantityButton.dataset.id);
-
-  const cartItem = cart.find(
-    item => item.id === productId
-  );
-
-  if (!cartItem) return;
-
-
-  // Increase quantity
-  if (
-    quantityButton.classList.contains("increase")
-  ) {
-    cartItem.quantity += 1;
-  }
-
-
-  // Decrease quantity
-  if (
-    quantityButton.classList.contains("decrease")
-  ) {
-    cartItem.quantity -= 1;
-
-    if (cartItem.quantity <= 0) {
-      cart = cart.filter(
-        item => item.id !== productId
-      );
-    }
-  }
-
-
-  // Save updated cart
-  saveCart();
-
-  updateProductButtons();
-  renderCart();
-});
-
-
-// ========================================
-// RENDER CART
-// ========================================
+function getCartTotal(items) {
+	return items.reduce((total, item) => total + item.price * item.quantity, 0);
+}
 
 function renderCart() {
-
-  // Empty cart
-  if (cart.length === 0) {
-
-    cartContent.innerHTML = `
-      <div class="cart-empty">
-        <p>Your added items will appear here.</p>
-      </div>
-    `;
-
-    checkoutBtn.disabled = true;
-
-    updateCartTotals();
-
-    return;
-  }
-
-
-  // Cart has items
-  cartContent.innerHTML = cart.map(item => {
-
-    const itemTotal =
-      item.price * item.quantity;
-
-    return `
-      <div class="cart-item">
-
-        <div class="cart-item-info">
-
-          <p class="cart-item-name">
-            ${item.name}
-          </p>
-
-          <div class="cart-item-details">
-
-            <span class="cart-item-qty">
-              ${item.quantity}x
-            </span>
-
-            <span class="cart-item-unit">
-              @ $${item.price.toFixed(2)}
-            </span>
-
-            <span class="cart-item-total">
-              $${itemTotal.toFixed(2)}
-            </span>
-
-          </div>
-
-        </div>
-
-        <button
-          class="btn-remove"
-          type="button"
-          data-id="${item.id}"
-          aria-label="Remove ${item.name}"
-        >
-          ×
-        </button>
-
-      </div>
-    `;
-  }).join("");
-
-
-  checkoutBtn.disabled = false;
-
-  updateCartTotals();
+	const items = getCartItems();
+	const count = items.reduce((total, item) => total + item.quantity, 0);
+	cartCount.textContent = `(${count})`;
+	if (!items.length) {
+		cartContent.innerHTML = `<div class="empty-cart"><img src="./assets/images/illustration-empty-cart.svg" alt=""><p>Your added items will appear here</p></div>`;
+		return;
+	}
+	cartContent.innerHTML = `<ul class="cart-list">${items.map((item) => `<li class="cart-item"><div><p class="cart-item-name">${item.name}</p><div class="cart-item-detail"><span class="cart-item-quantity">${item.quantity}x</span><span class="cart-item-price">@ ${money(item.price)}</span><strong class="cart-item-total">${money(item.price * item.quantity)}</strong></div></div><button class="remove-item" type="button" data-action="remove" data-name="${item.name}" aria-label="Remove ${item.name}"><img src="./assets/images/icon-remove-item.svg" alt=""></button></li>`).join("")}</ul><div class="cart-total"><span>Order total</span><strong>${money(getCartTotal(items))}</strong></div><div class="carbon-neutral"><img src="./assets/images/icon-carbon-neutral.svg" alt="">This is a <strong>carbon-neutral</strong> delivery</div><button class="confirm-button" type="button" data-action="confirm">Confirm Order</button>`;
 }
 
+function updateCart(action, name) {
+	const quantity = cart.get(name) || 0;
+	if (action === "add" || action === "increment") cart.set(name, quantity + 1);
+	if (action === "decrement") quantity > 1 ? cart.set(name, quantity - 1) : cart.delete(name);
+	if (action === "remove") cart.delete(name);
+	saveCart();
+	updateProductCard(getProduct(name));
+	renderCart();
+}
 
-// ========================================
-// REMOVE CART ITEM
-// ========================================
+function showConfirmation() {
+	const items = getCartItems();
+	confirmationItems.innerHTML = `${items.map((item) => `<div class="confirmation-row"><img src="${item.image.thumbnail}" alt=""><div><strong>${item.name}</strong><span>${item.quantity}x&nbsp;&nbsp; @ ${money(item.price)}</span></div><b>${money(item.price * item.quantity)}</b></div>`).join("")}<div class="confirmation-total"><span>Order total</span><strong>${money(getCartTotal(items))}</strong></div>`;
+	modal.hidden = false;
+	document.body.classList.add("modal-open");
+	document.querySelector("#start-new-order").focus();
+}
 
-cartContent.addEventListener("click", (event) => {
-
-  const removeButton =
-    event.target.closest(".btn-remove");
-
-  if (!removeButton) return;
-
-  const productId =
-    Number(removeButton.dataset.id);
-
-  cart = cart.filter(
-    item => item.id !== productId
-  );
-
-  // Save updated cart
-  saveCart();
-
-  updateProductButtons();
-  renderCart();
+document.addEventListener("click", (event) => {
+	const target = event.target.closest("[data-action]");
+	if (!target) return;
+	if (target.dataset.action === "confirm") showConfirmation();
+	else updateCart(target.dataset.action, target.dataset.name);
 });
 
-
-// ========================================
-// UPDATE CART TOTALS
-// ========================================
-
-function updateCartTotals() {
-
-  // Total number of items
-  const totalItems = cart.reduce(
-    (total, item) =>
-      total + item.quantity,
-    0
-  );
-
-
-  // Subtotal
-  const subtotal = cart.reduce(
-    (total, item) =>
-      total + item.price * item.quantity,
-    0
-  );
-
-
-  // 10% tax
-  const tax = subtotal * 0.10;
-
-
-  // Update HTML
-  cartCount.textContent = totalItems;
-
-  cartSubtotal.textContent =
-    `$${subtotal.toFixed(2)}`;
-
-  cartTax.textContent =
-    `$${tax.toFixed(2)}`;
-}
-
-
-// ========================================
-// CHECKOUT
-// ========================================
-
-checkoutBtn.addEventListener("click", () => {
-
-  if (cart.length === 0) return;
-
-  renderOrderConfirmation();
-
-  openModal();
+document.querySelector("#start-new-order").addEventListener("click", () => {
+	cart.clear();
+	saveCart();
+	modal.hidden = true;
+	document.body.classList.remove("modal-open");
+	renderProducts();
+	renderCart();
 });
 
-
-// ========================================
-// ORDER CONFIRMATION
-// ========================================
-
-function renderOrderConfirmation() {
-
-  const subtotal = cart.reduce(
-    (total, item) =>
-      total + item.price * item.quantity,
-    0
-  );
-
-  const tax = subtotal * 0.10;
-
-  const total = subtotal + tax;
-
-
-  modalOrderSummary.innerHTML = `
-
-    <div class="modal-order-summary">
-
-      <div class="order-items">
-
-        ${cart.map(item => {
-
-          const itemTotal =
-            item.price * item.quantity;
-
-          return `
-            <div class="order-item">
-
-              <img
-                src="${item.image}"
-                alt="${item.name}"
-              >
-
-              <div class="order-item-info">
-
-                <strong>
-                  ${item.name}
-                </strong>
-
-                <p>
-                  ${item.quantity} ×
-                  $${item.price.toFixed(2)}
-                </p>
-
-              </div>
-
-              <strong class="order-item-total">
-                $${itemTotal.toFixed(2)}
-              </strong>
-
-            </div>
-          `;
-
-        }).join("")}
-
-      </div>
-
-      <div class="order-total">
-
-        <span>
-          Order Total
-        </span>
-
-        <strong>
-          $${total.toFixed(2)}
-        </strong>
-
-      </div>
-
-    </div>
-  `;
-}
-
-
-// ========================================
-// OPEN MODAL
-// ========================================
-
-function openModal() {
-
-  modalBackdrop.classList.add("active");
-
-  modalBackdrop.setAttribute(
-    "aria-hidden",
-    "false"
-  );
-
-  document.body.style.overflow = "hidden";
-}
-
-
-// ========================================
-// CLOSE MODAL
-// ========================================
-
-function closeModal() {
-
-  modalBackdrop.classList.remove("active");
-
-  modalBackdrop.setAttribute(
-    "aria-hidden",
-    "true"
-  );
-
-  document.body.style.overflow = "";
-}
-
-
-// ========================================
-// CLICK OUTSIDE MODAL
-// ========================================
-
-modalBackdrop.addEventListener(
-  "click",
-  (event) => {
-
-    if (event.target === modalBackdrop) {
-      closeModal();
-    }
-
-  }
-);
-
-
-// ========================================
-// ESCAPE KEY
-// ========================================
-
-document.addEventListener(
-  "keydown",
-  (event) => {
-
-    if (event.key === "Escape") {
-      closeModal();
-    }
-
-  }
-);
-
-
-// ========================================
-// START NEW ORDER
-// ========================================
-
-newOrderBtn.addEventListener(
-  "click",
-  () => {
-
-    // Empty the cart
-    cart = [];
-
-    // Remove cart from localStorage
-    localStorage.removeItem("cart");
-
-    // Update everything
-    updateProductButtons();
-    renderCart();
-
-    // Close confirmation modal
-    closeModal();
-
-    // Scroll back to products
-    window.scrollTo({
-      top: 0,
-      behavior: "smooth"
-    });
-
-  }
-);
-
-
-// ========================================
-// INITIAL STATE
-// ========================================
-
-updateProductButtons();
-renderCart();
+fetch("./data.json")
+	.then((response) => {
+		if (!response.ok) throw new Error("Menu unavailable");
+		return response.json();
+	})
+	.then((data) => {
+		products = data;
+		for (const name of cart.keys()) {
+			if (!getProduct(name)) cart.delete(name);
+		}
+		saveCart();
+		renderProducts();
+		renderCart();
+	})
+	.catch(() => {
+		productGrid.innerHTML = "<p class=\"load-error\">We couldn't load the menu right now.</p>";
+	});

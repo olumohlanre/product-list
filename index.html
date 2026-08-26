@@ -1,159 +1,39 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Product list with cart</title>
-    <link rel="stylesheet" href="style.css">
-    <script src="app.js" defer></script>
-  </head>
-  <body>
-    <main class="container">
-      <section class="products-section">
-        <div class="cart-header">
-          <div>
-            <h1>Desserts</h1>
-            <p class="cart-summary">Choose from our sweet treats and add them to your cart.</p>
-          </div>
-          <div class="cart-summary">9 items available</div>
-        </div>
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta name="description" content="Choose from a tempting selection of freshly made desserts.">
+	<title>Sweet Crumbs | Desserts</title>
+	<link rel="stylesheet" href="./style.css">
+</head>
+<body>
+	<main class="page-shell">
+		<section class="catalog" aria-labelledby="page-title">
+			<div class="catalog-heading">
+				<h1 id="page-title">Desserts</h1>
+			</div>
+			<div id="product-grid" class="product-grid" aria-live="polite"></div>
+		</section>
 
-        <div class="product-grid" id="product-grid">
-          <article class="product-card" data-thumbnail="assets/images/image-waffle-desktop.jpg">
-            <picture class="product-image">
-              <img src="assets/images/image-waffle-desktop.jpg" alt="Waffle with berries">
-            </picture>
-            <div class="product-body">
-              <p class="product-title">Waffle with Berries</p>
-              <p class="product-category">Waffle</p>
-              <p class="product-price">$6.50</p>
-              <button class="product-button" type="button" data-product-id="1">Add to Cart</button>
-            </div>
-          </article>
+		<aside class="cart-panel" aria-labelledby="cart-title">
+			<div class="cart-header">
+				<h2 id="cart-title">Your Cart <span id="cart-count">(0)</span></h2>
+			</div>
+			<div id="cart-content"></div>
+		</aside>
+	</main>
 
-          <article class="product-card" data-thumbnail="assets/images/image-creme-brulee-desktop.jpg">
-            <picture class="product-image">
-              <img src="assets/images/image-creme-brulee-desktop.jpg" alt="Vanilla bean creme brulee">
-            </picture>
-            <div class="product-body">
-              <p class="product-title">Vanilla Bean Crème Brûlée</p>
-              <p class="product-category">Crème Brûlée</p>
-              <p class="product-price">$7.00</p>
-              <button class="product-button" type="button" data-product-id="2">Add to Cart</button>
-            </div>
-          </article>
+	<div id="confirmation-modal" class="modal-backdrop" hidden>
+		<section class="confirmation-modal" role="dialog" aria-modal="true" aria-labelledby="confirmation-title" aria-describedby="confirmation-copy">
+			<img src="./assets/images/icon-order-confirmed.svg" alt="" class="confirmation-icon">
+			<h2 id="confirmation-title">Your order is confirmed</h2>
+			<p id="confirmation-copy" class="confirmation-copy">We hope you enjoy your food!</p>
+			<div id="confirmation-items" class="confirmation-items"></div>
+			<button id="start-new-order" class="new-order-button" type="button">Start new order</button>
+		</section>
+	</div>
 
-          <article class="product-card" data-thumbnail="assets/images/image-macaron-desktop.jpg">
-            <picture class="product-image">
-              <img src="assets/images/image-macaron-desktop.jpg" alt="Macaron mix of five">
-            </picture>
-            <div class="product-body">
-              <p class="product-title">Macaron Mix of Five</p>
-              <p class="product-category">Macaron</p>
-              <p class="product-price">$8.00</p>
-              <button class="product-button" type="button" data-product-id="3">Add to Cart</button>
-            </div>
-          </article>
-
-          <article class="product-card" data-thumbnail="assets/images/image-tiramisu-desktop.jpg">
-            <picture class="product-image">
-              <img src="assets/images/image-tiramisu-desktop.jpg" alt="Classic tiramisu">
-            </picture>
-            <div class="product-body">
-              <p class="product-title">Classic Tiramisu</p>
-              <p class="product-category">Tiramisu</p>
-              <p class="product-price">$5.50</p>
-              <button class="product-button" type="button" data-product-id="4">Add to Cart</button>
-            </div>
-          </article>
-
-          <article class="product-card" data-thumbnail="assets/images/image-baklava-desktop.jpg">
-            <picture class="product-image">
-              <img src="assets/images/image-baklava-desktop.jpg" alt="Pistachio baklava">
-            </picture>
-            <div class="product-body">
-              <p class="product-title">Pistachio Baklava</p>
-              <p class="product-category">Baklava</p>
-              <p class="product-price">$4.00</p>
-              <button class="product-button" type="button" data-product-id="5">Add to Cart</button>
-            </div>
-          </article>
-
-          <article class="product-card" data-thumbnail="assets/images/image-meringue-desktop.jpg">
-            <picture class="product-image">
-              <img src="assets/images/image-meringue-desktop.jpg" alt="Lemon meringue pie">
-            </picture>
-            <div class="product-body">
-              <p class="product-title">Lemon Meringue Pie</p>
-              <p class="product-category">Pie</p>
-              <p class="product-price">$5.00</p>
-              <button class="product-button" type="button" data-product-id="6">Add to Cart</button>
-            </div>
-          </article>
-
-          <article class="product-card" data-thumbnail="assets/images/image-cake-desktop.jpg">
-            <picture class="product-image">
-              <img src="assets/images/image-cake-desktop.jpg" alt="Red velvet cake">
-            </picture>
-            <div class="product-body">
-              <p class="product-title">Red Velvet Cake</p>
-              <p class="product-category">Cake</p>
-              <p class="product-price">$4.50</p>
-              <button class="product-button" type="button" data-product-id="7">Add to Cart</button>
-            </div>
-          </article>
-
-          <article class="product-card" data-thumbnail="assets/images/image-brownie-desktop.jpg">
-            <picture class="product-image">
-              <img src="assets/images/image-brownie-desktop.jpg" alt="Salted caramel brownie">
-            </picture>
-            <div class="product-body">
-              <p class="product-title">Salted Caramel Brownie</p>
-              <p class="product-category">Brownie</p>
-              <p class="product-price">$4.50</p>
-              <button class="product-button" type="button" data-product-id="8">Add to Cart</button>
-            </div>
-          </article>
-
-          <article class="product-card" data-thumbnail="assets/images/image-panna-cotta-desktop.jpg">
-            <picture class="product-image">
-              <img src="assets/images/image-panna-cotta-desktop.jpg" alt="Vanilla panna cotta">
-            </picture>
-            <div class="product-body">
-              <p class="product-title">Vanilla Panna Cotta</p>
-              <p class="product-category">Panna Cotta</p>
-              <p class="product-price">$6.50</p>
-              <button class="product-button" type="button" data-product-id="9">Add to Cart</button>
-            </div>
-          </article>
-        </div>
-      </section>
-
-      <aside class="cart-section">
-        <div class="cart-header">
-          <h2>Your Cart</h2>
-          <p class="cart-summary">Items in cart: <strong id="cart-count">0</strong></p>
-        </div>
-
-        <div id="cart-content" class="cart-list">
-          <div class="cart-empty">
-          </div>
-        </div>
-
-        <div class="cart-footer">
-          <div class="footer-row"><span>Subtotal</span><span id="cart-subtotal">$0.00</span></div>
-          <div class="footer-row"><span>Tax</span><span id="cart-tax">$0.00</span></div>
-          <button id="checkout-btn" class="checkout-btn" disabled>Checkout</button>
-        </div>
-      </aside>
-    </main>
-
-    <div id="modal-backdrop" class="modal-backdrop" aria-hidden="true">
-  <div class="modal" role="dialog" aria-modal="true">
-    <h2>Order confirmed</h2>
-    <div id="modal-order-summary"></div>
-  </div>
-</div>
-
-  </body>
+	<script src="./app.js"></script>
+</body>
 </html>
