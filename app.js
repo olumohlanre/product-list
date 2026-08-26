@@ -73,7 +73,17 @@ const products = [
 // CART
 // ========================================
 
-let cart = [];
+// Load cart from localStorage
+let cart = JSON.parse(localStorage.getItem("cart")) || [];
+
+
+// ========================================
+// SAVE CART TO LOCALSTORAGE
+// ========================================
+
+function saveCart() {
+  localStorage.setItem("cart", JSON.stringify(cart));
+}
 
 
 // ========================================
@@ -152,6 +162,9 @@ function addToCart(productId) {
       quantity: 1
     });
   }
+
+  // Save cart after adding item
+  saveCart();
 
   updateProductButtons();
   renderCart();
@@ -261,6 +274,9 @@ productGrid.addEventListener("click", (event) => {
   }
 
 
+  // Save updated cart
+  saveCart();
+
   updateProductButtons();
   renderCart();
 });
@@ -359,6 +375,9 @@ cartContent.addEventListener("click", (event) => {
   cart = cart.filter(
     item => item.id !== productId
   );
+
+  // Save updated cart
+  saveCart();
 
   updateProductButtons();
   renderCart();
@@ -569,6 +588,9 @@ newOrderBtn.addEventListener(
 
     // Empty the cart
     cart = [];
+
+    // Remove cart from localStorage
+    localStorage.removeItem("cart");
 
     // Update everything
     updateProductButtons();
